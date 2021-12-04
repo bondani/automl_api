@@ -1,0 +1,38 @@
+version: "3.9"
+services:
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/api/Dockerfile
+    ports:
+      - "58080:8080"
+    volumes:
+      - "./configs:/backend/configs"
+      - "./uploads:/backend/uploads"
+
+  rq_worker:
+    build: 
+      context: .
+      dockerfile: ./docker/rq/Dockerfile
+    volumes:
+      - "./configs:/backend/configs"
+    
+  redis:
+    image: "redis"
+    ports:
+      - "56379:6379"
+      
+  mongo:
+    image: "mongo"
+    ports:
+      - "57017:27017"
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.26.0.0/24
+
+
+
+    
