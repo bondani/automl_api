@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: redis
+    role: worker
+    tier: backend
+  name: automl-rq-worker
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: redis
+      role: worker
+      tier: backend
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: redis
+        role: worker
+        tier: backend
+    spec:
+      containers:
+      - image: bondani/automl_rq:latest
+        name: automl-rq-worker
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        volumeMounts:
+        - mountPath: /backend/configs
+          name: config-volume
+      volumes:
+      - name: config-volume
+        configMap:
+          name: automl-config
+status: {}

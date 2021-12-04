@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: automl
+    tier: frontend
+  name: automl-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: automl
+      tier: frontend
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: automl
+        tier: frontend
+    spec:
+      volumes:
+      - name: config-volume
+        configMap:
+          name: automl-config
+      - name: automl-uploads-pv
+        persistentVolumeClaim:
+          claimName: automl-uploads-pvc
+      containers:
+      - image: bondani/automl_api:latest
+        name: automl-api
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /backend/configs
+          name: config-volume
+        - mountPath: /backend/uploads
+          name: automl-uploads-pv
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+status: {}
