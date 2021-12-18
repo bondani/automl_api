@@ -1,0 +1,39 @@
+import time
+
+from aiohttp import web
+
+
+def prometheus_middleware(app_name):
+    @web.middleware
+    async def decorator_factory(request, handler):
+        try:
+            response = await handler(request)
+            request['start_time'] = time.time()
+            request.app['REQUEST_IN_PROGRESS'].labels(
+                app_name, request.path, request.method
+            ).inc()
+
+            resp_time = time.time() - request['start_time']
+
+            request.app['REQUEST_LATENCY'].labels(
+                app_name, request.path
+                ).observe(resp_time)
+                
+            request.app['REQUEST_IN_PROGRESS'].labels(
+                app_name, request.path, request.method
+            ).dec()
+
+            request.app['REQUEST_COUNT'].labels(
+                app_name, request.method, 
+                request.path, response.status
+            ).inc()         
+
+        except web.HTTPException as e:
+            raise
+            message = e.reason
+
+            return web.json_response({'error': message})
+        
+        return response
+
+    return decorator_factory

@@ -213,6 +213,7 @@ async def fit_model(request):
         feature_selection
         )
 
+    request.app['FIT_JOB_ENQUEUED'].labels(request.app['app_name']).inc()
 
     return web.json_response({
         'status': 'success',

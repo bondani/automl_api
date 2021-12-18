@@ -3,9 +3,13 @@ import logging
 from aiohttp import web
 import motor.motor_asyncio as aiomotor
 from aiohttp_swagger import setup_swagger
+import prometheus_client
+from prometheus_client import Counter
 
 from automl_api.routes import setup_routes
 from automl_api.settings import load_config
+from automl_api.middlewares import prometheus_middleware
+from automl_api.helpers.prometheus import setup_prometheus
 
 from automl_scheduler.control import Scheduler
 
@@ -19,10 +23,22 @@ async def init_mongo(config):
     return client
 
 
+def setup_middlewares(app):
+
+    app_name = app['app_name']
+
+    middlewares = [
+        prometheus_middleware(app_name)
+    ]
+
+    app.middlewares.extend(middlewares)
+
+
 async def init_app(config):
     app = web.Application()
 
     app['config'] = config
+    app['app_name'] = config['app'].get('app_name', 'not_setup')
 
     setup_routes(app)
     setup_swagger(app)
@@ -32,6 +48,10 @@ async def init_app(config):
 
     db = await init_mongo(app['config'])
     app['db'] = db
+
+    setup_prometheus(app)
+
+    setup_middlewares(app)
 
     return app
 

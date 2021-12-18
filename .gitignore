@@ -1,5 +1,8 @@
 configs/dev.yml
 
+# Prometheus internal files
+prometheus/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

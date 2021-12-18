@@ -19,7 +19,20 @@ docker build -t automl_api -f docker/api/Dockerfile .
 docker build -t automl_rq -f docker/rq/Dockerfile .
 ```
 
-## 4. Запусть контейнеры на основе созданных образов
+## 4. Запустить инстанс Prometheus
+
+_Перед запуском необходимо произвести конфигурирование через `configs/prometheus.yml`. Основное: изменить адреса приложений в зависимости от того, в какой подсети они запущены._
+
+```
+docker run \
+    -p 9090:9090 --name some-prometheus \
+    -v ${PWD}/prometheus:/prometheus \
+    -v ${PWD}/configs/prometheus.yml:/etc/prometheus/prometheus.yml \
+    prom/prometheus
+```
+
+
+## 5. Запусть контейнеры на основе созданных образов
 
 ```
 docker run -d -p 58080:8080 -v ${PWD}/uploads:/backend/uploads -v ${PWD}/configs:/backend/configs --name some-automl automl_api

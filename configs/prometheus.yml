@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+  external_labels:
+    monitor: 'ml-project'
+
+scrape_configs:
+  - job_name: 'prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['172.17.0.1:9090']
+    
+  - job_name: 'ml_api'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['172.17.0.1:8080']
