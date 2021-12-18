@@ -1,3 +1,8 @@
+![docker workflow](https://github.com/bondani/automl_api/actions/workflows/docker-image.yml/badge.svg)
+
+![python workflow](https://github.com/bondani/automl_api/actions/workflows/python-app.yml/badge.svg)
+
+
 # Запуск приложения с помощью Dockerfile'ов
 
 ## 1. Запустить инстанс БД Mongo
