@@ -24,7 +24,7 @@ async def get_available_models_classes(request):
     config = request.app['config']
     amc = config['automl']['available_models_classes']
     
-    return web.json_response(amc)
+    return web.json_response(amc, status=200)
 
 
 async def get_models(request):
@@ -42,7 +42,7 @@ async def get_models(request):
 
     models = await db['available_models'].find().to_list(length=None)
 
-    return web.json_response(json.loads(json_util.dumps(models)))
+    return web.json_response(json.loads(json_util.dumps(models)), status=200)
 
 
 async def remove_model(request):
@@ -74,10 +74,10 @@ async def remove_model(request):
     _id = data.get('model_id')
 
     if not _id:
-        return {
+        return web.json_response({
             'status': 'error',
             'msg': 'model_id need to be specify'
-        }
+        }, status=400)
 
     db_name = request.app['config']['mongodb']['mongo_db_name']
     db = request.app['db'][db_name]
@@ -88,7 +88,7 @@ async def remove_model(request):
         return web.json_response({
             'status': 'error',
             'msg': f'model_id: {_id} not found'
-        })
+        }, status=400)
 
     model = json.loads(json_util.dumps(model))
 
@@ -106,7 +106,7 @@ async def remove_model(request):
     return web.json_response({
         'status': 'success',
         'result': model
-    })
+    }, status=200)
 
 
 async def fit_model(request):
@@ -178,7 +178,7 @@ async def fit_model(request):
         return web.json_response({
             'status': 'Error',
             'msg': 'Need to specify dataset'
-        })
+        }, status=400)
 
     datasets_path = Path(request.app['config']['storage']['datasets'])
 
@@ -191,7 +191,7 @@ async def fit_model(request):
         return web.json_response({
             'status': 'Error',
             'msg': 'Dataset not found'
-        })
+        }, status=400)
 
     model_type = data.get('model_type', 'classification')
     hyperparams = data.get('hyperparams', {})
@@ -207,7 +207,7 @@ async def fit_model(request):
     )
 
     if val_res:
-        return web.json_response(val_res)
+        return web.json_response(val_res, status=200)
 
 
     request.app['scheduler'].enqueue_job(
@@ -225,7 +225,7 @@ async def fit_model(request):
     return web.json_response({
         'status': 'success',
         'msg': 'Job in queue'
-    })
+    }, status=200)
 
 
 async def predict_data(request):
@@ -287,7 +287,7 @@ async def predict_data(request):
         return web.json_response({
             'status': 'Error',
             'msg': 'Dataset not found'
-        })
+        }, status=400)
 
     db_name = request.app['config']['mongodb']['mongo_db_name']
     db = request.app['db'][db_name]
@@ -295,10 +295,10 @@ async def predict_data(request):
     model = await db['available_models'].find({"_id": ObjectId(_id)}).to_list(length=1)
 
     if not model:
-        return {
+        return web.json_response({
             'status': 'error',
             'msg': f'model_id: {_id} not found'
-        }
+        }, status=400)
 
     model = json.loads(json_util.dumps(model))[0]
 
@@ -317,15 +317,15 @@ async def predict_data(request):
             return web.json_response({
                 'status': 'error',
                 'msg': 'predict proba not available for non classification model'
-            })
+            }, status=400)
 
         if not res:
             return web.json_response({
                 'status': 'error',
                 'msg': 'predict proba not available for non classification model'
-            })
+            }, status=400)
     
     else:
         res = predict(df, model)
 
-    return web.json_response(res)
+    return web.json_response(res, status=200)

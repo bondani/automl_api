@@ -63,7 +63,7 @@ async def add_dataset(request):
         return web.json_response({
             'status': 'error',
             'msg': f'file {filename} already exists'
-        })
+        }, status=400)
 
     async for data in request.content.iter_chunked(1024):
 
@@ -81,7 +81,7 @@ async def add_dataset(request):
     return web.json_response({
         'status': 'success',
         'added_dataset': filename.name
-        })
+        }, status=200)
     
 
     pass

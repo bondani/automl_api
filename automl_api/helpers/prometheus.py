@@ -1,3 +1,5 @@
+import logging
+
 from prometheus_client import Counter, Gauge, Histogram
 
 def setup_prometheus(app):
