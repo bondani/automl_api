@@ -1,4 +1,5 @@
 import logging
+import pathlib
 
 from aiohttp import web
 import motor.motor_asyncio as aiomotor
@@ -20,7 +21,38 @@ async def init_mongo(config):
 
     client = aiomotor.AsyncIOMotorClient(mongo_host, mongo_port)
 
+    logging.info('MongoDB is initialized')
+
     return client
+
+def setup_logging(app, config):
+
+    log_config = config['logging']
+    
+    log_filename = pathlib.Path(log_config.get('filename', 'app.log'))
+    log_format = log_config.get(
+        'format',
+        '%(levelname)s::%(asctime)s::%(message)s',
+        )
+    log_debug = log_config.get('debug')
+
+    if log_debug:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+
+    if not log_filename.exists():
+        log_filename.parent.mkdir(parents=True, exist_ok=True)
+        log_filename.touch(exist_ok=True)
+
+
+    logging.basicConfig(
+        filename=log_filename,
+        format=log_format,
+        filemode='w',
+        datefmt='%d-%b-%y %H:%M:%S',
+        level=log_level
+        )
 
 
 def setup_middlewares(app):
@@ -40,6 +72,7 @@ async def init_app(config):
     app['config'] = config
     app['app_name'] = config['app'].get('app_name', 'not_setup')
 
+    setup_logging(app, config)
     setup_routes(app)
     setup_swagger(app)
 

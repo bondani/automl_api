@@ -101,6 +101,8 @@ async def remove_model(request):
     except FileNotFoundError:
         pass
 
+    logging.info(f'{model} model removed')
+
     return web.json_response({
         'status': 'success',
         'result': model
@@ -183,6 +185,9 @@ async def fit_model(request):
     dataset_path = datasets_path / dataset
 
     if not dataset_path.is_file():
+
+        logging.error(f'an attempt to access a non-existent dataset {dataset}')
+
         return web.json_response({
             'status': 'Error',
             'msg': 'Dataset not found'
@@ -214,6 +219,8 @@ async def fit_model(request):
         )
 
     request.app['FIT_JOB_ENQUEUED'].labels(request.app['app_name']).inc()
+
+    logging.info(f'new model (model_type: {model_type}; dataset: {dataset}) sending to worker')
 
     return web.json_response({
         'status': 'success',

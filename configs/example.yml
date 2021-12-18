@@ -5,6 +5,11 @@ automl:
 app:
   app_name: 'autoML'
 
+logging:
+  filename: 'web_app.log'
+  format: '%(levelname)s::%(asctime)s::%(message)s'
+  debug: true
+
 storage:
   datasets: ./uploads/datasets
   models: ./uploads/models

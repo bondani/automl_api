@@ -76,6 +76,7 @@ async def add_dataset(request):
         async with aiofiles.open(file_path, file_mode) as f:
             await f.write(data)
 
+    logging.info(f'{filename.name} dataset add')
 
     return web.json_response({
         'status': 'success',

@@ -1,4 +1,5 @@
 import time
+import logging
 
 from aiohttp import web
 
@@ -6,6 +7,9 @@ from aiohttp import web
 def prometheus_middleware(app_name):
     @web.middleware
     async def decorator_factory(request, handler):
+
+        logging.debug('try calculate metrics for prometheus')
+
         try:
             response = await handler(request)
             request['start_time'] = time.time()
@@ -18,7 +22,7 @@ def prometheus_middleware(app_name):
             request.app['REQUEST_LATENCY'].labels(
                 app_name, request.path
                 ).observe(resp_time)
-                
+
             request.app['REQUEST_IN_PROGRESS'].labels(
                 app_name, request.path, request.method
             ).dec()
@@ -29,6 +33,7 @@ def prometheus_middleware(app_name):
             ).inc()         
 
         except web.HTTPException as e:
+            logging.error(e.reason)
             raise
             message = e.reason
 

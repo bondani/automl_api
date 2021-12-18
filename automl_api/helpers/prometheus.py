@@ -20,3 +20,5 @@ def setup_prometheus(app):
         'fit_job_equeued', 'Total job enqueued',
         ['app_name']
     )
+
+    logging.info('Prometheus entries setup success')

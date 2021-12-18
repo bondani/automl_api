@@ -9,6 +9,7 @@ services:
     volumes:
       - "./configs:/backend/configs"
       - "./uploads:/backend/uploads"
+      - "./logging:/backend/logging"
 
   rq_worker:
     build: 
