@@ -7,7 +7,7 @@ from automl_api.settings import load_config
 
 @pytest.fixture
 def config():
-    dev_config = pathlib.Path('configs') / 'dev.yml'
+    dev_config = pathlib.Path('configs') / 'example.yml'
     config = load_config(dev_config)
 
     return config

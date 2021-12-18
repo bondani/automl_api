@@ -24,6 +24,12 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
+    - name: run redis docker
+      run: docker run --name some-redis -p 56379:6379 --rm -d redis
+
+    - name: run mongo docker
+      run: docker run --name some-mongo -p 57017:27017 --rm -d mongo
+
     - name: Test with pytest
       run: |
         pytest -s tests/

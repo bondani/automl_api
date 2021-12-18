@@ -15,11 +15,11 @@ storage:
   models: ./uploads/models
 
 rq:
-  redis_host: 172.26.0.1
+  redis_host: 172.17.0.1
   redis_port: 56379
 
 mongodb:
-  mongo_host: 172.26.0.1
+  mongo_host: 172.17.0.1
   mongo_port: 57017
   mongo_db_name: dev_database
 

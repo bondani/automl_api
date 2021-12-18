@@ -31,7 +31,7 @@ services:
   prometheus:
     image: "prom/prometheus"
     ports:
-      - "57017:9090"
+      - "59090:9090"
     volumes:
       - "./configs/prometheus.yml:/etc/prometheus/prometheus.yml"
       - "prometheus:/prometheus"
