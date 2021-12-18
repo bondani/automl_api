@@ -6,6 +6,7 @@ COPY automl_api /backend/automl_api
 COPY automl_scheduler /backend/automl_scheduler
 COPY requirements.txt /backend
 COPY telegram_bot.py /backend
+COPY prom_tg_bot.py /backend
 
 RUN mkdir -p /backend/supervisor_out
 

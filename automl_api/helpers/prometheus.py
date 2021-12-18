@@ -23,4 +23,9 @@ def setup_prometheus(app):
         ['app_name']
     )
 
+    app['ERROR_REQUEST_COUNT'] = Counter(
+        'error_request_total', 'Total Error requests count',
+        ['app_name', 'method', 'endpoint', 'http_status', 'message', 'timestamp']
+    )
+
     logging.info('Prometheus entries setup success')

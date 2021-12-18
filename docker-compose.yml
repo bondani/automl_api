@@ -6,6 +6,7 @@ services:
       dockerfile: ./docker/api/Dockerfile
     ports:
       - "58080:8080"
+      - "58081:8081"
     volumes:
       - "./configs:/backend/configs"
       - "./uploads:/backend/uploads"
@@ -35,6 +36,13 @@ services:
     volumes:
       - "./configs/prometheus.yml:/etc/prometheus/prometheus.yml"
       - "prometheus:/prometheus"
+
+  alertmanager:
+    image: "quay.io/prometheus/alertmanager"
+    ports:
+      - "59093:9093"
+    volumes:
+      - "./configs/alertmanager.yml:/etc/alertmanager/alertmanager.yml"
 
 networks:
   default:

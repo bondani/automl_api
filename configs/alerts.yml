@@ -1,0 +1,10 @@
+# ALERT if requests for api in minute more than 500
+
+groups:
+  - name: non 200 status code
+    rules:
+      - alert: non_200_status
+        expr: sum_over_time(request_total{http_status="200",endpoint!="/metrics"}[1m]) > 500
+        for: 1m
+        annotations:
+            description: "{{ $labels.timestamp }}"

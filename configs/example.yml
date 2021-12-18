@@ -25,6 +25,7 @@ mongodb:
 
 telegram:
   api_key: YOUR_TOKEN_HERE
+  admin_id: ADMIN_ID here (who will be get alerts)
 
 automl_api:
   api_host: 127.0.0.1

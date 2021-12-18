@@ -1,0 +1,12 @@
+global:
+  resolve_timeout: 1m
+
+route:
+  receiver: 'prom-tg-bot'
+
+
+receivers:
+- name: 'prom-tg-bot'
+  webhook_configs:
+  - send_resolved: true
+    url: 'http://172.17.0.1:8081/alert'

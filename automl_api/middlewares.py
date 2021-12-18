@@ -34,8 +34,15 @@ def prometheus_middleware(app_name):
 
         except web.HTTPException as e:
             logging.error(e.reason)
-            raise
             message = e.reason
+
+            request.app['ERROR_REQUEST_COUNT'].labels(
+                app_name, request.method, 
+                request.path, e.status,
+                message, time.time()
+            ).inc()
+
+            raise
 
             return web.json_response({'error': message})
         
