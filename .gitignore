@@ -53,3 +53,8 @@ logging
 
 # Sphinx documentation
 docs/_build/
+
+catboost_info
+mlruns/*
+uploads/models/*
+*memory*

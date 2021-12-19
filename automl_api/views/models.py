@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import logging
 
 from aiohttp import web
 from bson import json_util

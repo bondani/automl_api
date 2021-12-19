@@ -3,6 +3,7 @@ FROM ubuntu:20.04
 WORKDIR /backend
 
 COPY start_rq_worker.sh /backend
+COPY start_mlflow_ui.sh /backend
 
 RUN mkdir -p /backend/supervisor_out
 

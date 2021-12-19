@@ -1,11 +1,13 @@
 import pandas as pd
 import numpy as np
 from collections import OrderedDict
-from sklearn.metrics import roc_auc_score, r2_score, accuracy_score
+from sklearn.metrics import mean_squared_error, mean_absolute_error, roc_auc_score, f1_score, r2_score, accuracy_score
 from sklearn.model_selection import StratifiedShuffleSplit, ShuffleSplit
 from sklearn.linear_model import Ridge, LogisticRegression
-from lightgbm import LGBMClassifier, LGBMRegressor
+from lightgbm import LGBMRegressor, LGBMClassifier
 from catboost import CatBoostClassifier, CatBoostRegressor
+import mlflow
+import lightgbm as lgb
 
 
 def load_data(dataset_path):
@@ -150,19 +152,73 @@ class AutoML():
 
 
         if self.model_type == 'classification':
+
             if 'lgbm' in self.selected_models:
                 self.models['lgbm'] = self.lgbm_model(X_train, y_train)
+                y_proba = self.models['lgbm']['model'].predict(X_train[self.models['lgbm']['selected_features']])
+                y_pred = np.array([np.argmax(probas) for probas in y_proba])
+                with mlflow.start_run() as run:
+                    mlflow.log_params(self.hyperparams.get('lgbm', {}))
+                    mlflow.lightgbm.log_model(self.models['lgbm']['model'], artifact_path="model")
+
+                    roc, f1, acc = roc_auc_score(y_train, y_proba, multi_class='ovr'), f1_score(y_train, y_pred, average="macro"), accuracy_score(y_train, y_pred)
+                    mlflow.log_metrics({"train_roc_auc": roc, "train_f1score": f1, "train_accuracy":  acc})
+                    
+
             if 'logreg' in self.selected_models:
                 self.models['logreg'] = self.logreg_model(X_train, y_train)
+                y_pred = self.models['logreg']['model'].predict(X_train[self.models['logreg']['selected_features']])
+                y_proba = self.models['logreg']['model'].predict_proba(X_train[self.models['logreg']['selected_features']])
+                with mlflow.start_run() as run:
+                    mlflow.log_params(self.hyperparams.get('logreg', {}))
+                    mlflow.sklearn.log_model(self.models['logreg']['model'], artifact_path="model")
+                    
+                    roc, f1, acc = roc_auc_score(y_train, y_proba, multi_class='ovr'), f1_score(y_train, y_pred, average="macro"), accuracy_score(y_train, y_pred)
+                    mlflow.log_metrics({"train_roc_auc": roc, "train_f1score": f1, "train_accuracy":  acc})
+
             if 'catboost' in self.selected_models:
                 self.models['catboost'] = self.catboost_model(X_train, y_train)
+                y_pred = self.models['catboost']['model'].predict(X_train[self.models['catboost']['selected_features']])
+                y_proba = self.models['catboost']['model'].predict_proba(X_train[self.models['catboost']['selected_features']])
+                with mlflow.start_run() as run:
+                    mlflow.log_params(self.hyperparams.get('catboost', {}))
+                    mlflow.catboost.log_model(self.models['catboost']['model'], artifact_path="model")
+                    
+                    roc, f1, acc = roc_auc_score(y_train, y_proba, multi_class='ovr'), f1_score(y_train, y_pred, average="macro"), accuracy_score(y_train, y_pred)
+                    mlflow.log_metrics({"train_roc_auc": roc, "train_f1score": f1, "train_accuracy":  acc})
+        
         elif self.model_type == 'regression':
+
             if 'lgbm' in self.selected_models:
                 self.models['lgbm'] = self.lgbm_model(X_train, y_train)
+                y_pred = self.models['lgbm']['model'].predict(X_train[self.models['lgbm']['selected_features']])
+                with mlflow.start_run() as run:
+                    mlflow.log_params(self.hyperparams.get('lgbm', {}))
+                    mlflow.lightgbm.log_model(self.models['lgbm']['model'], artifact_path="model")
+
+                    mse, mae, r2 = mean_squared_error(y_train, y_pred), mean_squared_error(y_train, y_pred), r2_score(y_train, y_pred)
+                    mlflow.log_metrics({"train_mse": mse, "train_mae": mae, "train_r2score": r2})
+
             if 'ridge' in self.selected_models:
                 self.models['ridge'] = self.ridge_model(X_train, y_train)
+                y_pred = self.models['ridge']['model'].predict(X_train[self.models['ridge']['selected_features']])
+                with mlflow.start_run() as run:
+                    mlflow.log_params(self.hyperparams.get('ridge', {}))
+                    mlflow.sklearn.log_model(self.models['ridge']['model'], artifact_path="model")
+                    
+                    #mlflow.sklearn.eval_and_log_metrics(self.models['ridge']['model'], X_train[self.models['ridge']['selected_features']], y_train, prefix='train_')
+                    mse, mae, r2 = mean_squared_error(y_train, y_pred), mean_squared_error(y_train, y_pred), r2_score(y_train, y_pred)
+                    mlflow.log_metrics({"train_mse": mse, "train_mae": mae, "train_r2score": r2})
+
             if 'catboost' in self.selected_models:
                 self.models['catboost'] = self.catboost_model(X_train, y_train)
+                y_pred = self.models['catboost']['model'].predict(X_train[self.models['catboost']['selected_features']])
+                with mlflow.start_run() as run:
+                    mlflow.log_params(self.hyperparams.get('catboost', {}))
+                    mlflow.catboost.log_model(self.models['catboost']['model'], artifact_path="model")
+                    
+                    mse, mae, r2 = mean_squared_error(y_train, y_pred), mean_squared_error(y_train, y_pred), r2_score(y_train, y_pred)
+                    mlflow.log_metrics({"train_mse": mse, "train_mae": mae, "train_r2score": r2})
 
         return self.models
 
@@ -244,7 +300,12 @@ class AutoML():
                 model = LGBMClassifier(**self.hyperparams['lgbm'])
             else:
                 model = LGBMClassifier()
-            model.fit(X_train[feats], y_train, verbose=False)
+            
+            num_classes = len(np.unique(y_train))
+            self.hyperparams['lgbm']['num_class'] = num_classes
+            self.hyperparams['lgbm']['objective'] = 'multiclass'
+            train_data = lgb.Dataset(X_train[feats], label=y_train)
+            model = lgb.train(self.hyperparams['lgbm'], train_data)
             return {'model': model, \
                     'selected_features': feats}
         else:
@@ -272,9 +333,14 @@ class AutoML():
                 model = LGBMRegressor(**self.hyperparams['lgbm'])
             else:
                 model = LGBMRegressor()
-            model.fit(X_train[feats], y_train, verbose=False)
+
+            self.hyperparams['lgbm']['objective'] = 'regression'
+            train_data = lgb.Dataset(X_train[feats], label=y_train)
+            model = lgb.train(self.hyperparams['lgbm'], train_data)
+            
             return {'model': model, \
                     'selected_features': feats}
+        
 
     def catboost_model(self, X_train, y_train):
         if self.model_type == 'classification':

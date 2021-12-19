@@ -16,8 +16,11 @@ services:
     build: 
       context: .
       dockerfile: ./docker/rq/Dockerfile
+    ports:
+      - "58082:8082"
     volumes:
       - "./configs:/backend/configs"
+      - "./mlruns:/backend/mlruns"
     
   redis:
     image: "redis"

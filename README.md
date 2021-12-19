@@ -53,12 +53,14 @@ Dashboard AlertManager'а доступен по адресу: `localhost:59093`
 ```
 docker run -d -p 58080:8080 -v ${PWD}/uploads:/backend/uploads -v ${PWD}/configs:/backend/configs --name some-automl automl_api
 
-docker run -d -v ${PWD}/configs:/backend/configs --name some-rq automl_rq
+docker run -d -v ${PWD}/configs:/backend/configs -v ${PWD}/mlruns:/backend/mlruns -p 58082:8082 --name some-rq automl_rq
 ```
 
 _Собранные образы доступны по названиям: `bondani/automl_api:latest` и `bondani/automl_rq:latest`_
 
 _`https://hub.docker.com/repository/docker/bondani/automl_api` `https://hub.docker.com/repository/docker/bondani/automl_rq`_
+
+_mlflow ui будет автоматически запущен вместе с воркерами и будет доступен по порту, указанному в команде выше. В mlflow доступны  строка состояния обучения модели, ее параметры, метрики обучающей выборки._
 
 # Запуск приложения с помощью docker-compose
 
